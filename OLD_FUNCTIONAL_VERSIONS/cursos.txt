@@ -1,4 +1,2 @@
-1
-matematica
-1000.00
-12
+1 matematica 1000.00 12
+2 fisica 32000.00 24
