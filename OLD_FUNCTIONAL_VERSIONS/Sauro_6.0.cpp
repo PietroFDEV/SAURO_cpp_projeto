@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #define MAX_NOME 100
+#define MAX_MATRICULAS 100
 
 typedef struct {
   int id;
@@ -36,6 +37,7 @@ void carregar_cursos(Curso cursos[], int * num_cursos);
 void carregar_matriculas(Matricula matriculas[], int * num_matriculas);
 void editar_aluno(Aluno alunos[], int num_alunos);
 void editar_curso(Curso cursos[], int num_cursos);
+void editar_matricula(Matricula matriculas[], int num_matriculas, int idMatricula, Curso cursos[], int num_cursos, Aluno alunos[], int num_alunos);
 void excluir_aluno(Aluno alunos[], int * num_alunos, Matricula matriculas[], int num_matriculas);
 void excluir_curso(Curso cursos[], int * num_cursos, Matricula matriculas[], int num_matriculas);
 void excluir_matricula(Matricula matriculas[], int * num_matriculas, int idAluno);
@@ -137,7 +139,7 @@ void menu_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos, 
     printf("3. Gerenciar matrículas\n");
     printf("4. Sair\n");
     printf("Escolha uma opção: ");
-    scanf("%d", & opcao_admin_menu);
+    scanf("%d", &opcao_admin_menu);
     getchar(); // Limpa o buffer de entrada
     limpar_console();
 
@@ -150,17 +152,17 @@ void menu_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos, 
       printf("3. Excluir aluno\n");
       printf("4. Ver alunos\n");
       printf("Escolha uma opção: ");
-      scanf("%d", & opcao_admin);
+      scanf("%d", &opcao_admin);
       getchar(); // Limpa o buffer de entrada
       switch (opcao_admin) {
       case 1:
-        cadastrar_aluno(alunos, & num_alunos);
+        cadastrar_aluno(alunos, &num_alunos);
         break;
       case 2:
         editar_aluno(alunos, num_alunos);
         break;
       case 3:
-        excluir_aluno(alunos, & num_alunos, matriculas, num_matriculas);
+        excluir_aluno(alunos, &num_alunos, matriculas, num_matriculas);
         break;
       case 4:
         exibir_alunos(alunos, num_alunos);
@@ -177,17 +179,17 @@ void menu_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos, 
       printf("3. Excluir curso\n");
       printf("4. Ver cursos\n");
       printf("Escolha uma opção: ");
-      scanf("%d", & opcao_admin);
+      scanf("%d", &opcao_admin);
       getchar(); // Limpa o buffer de entrada
       switch (opcao_admin) {
       case 1:
-        cadastrar_curso(cursos, & num_cursos);
+        cadastrar_curso(cursos, &num_cursos);
         break;
       case 2:
         editar_curso(cursos, num_cursos);
         break;
       case 3:
-        excluir_curso(cursos, & num_cursos, matriculas, num_matriculas);
+        excluir_curso(cursos, &num_cursos, matriculas, num_matriculas);
         break;
       case 4:
         exibir_cursos(cursos, num_cursos);
@@ -201,8 +203,9 @@ void menu_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos, 
       printf("\n======= Gerenciamento de Matrículas =======\n");
       printf("1. Ver matrículas\n");
       printf("2. Remover matrícula\n");
+      printf("3. Editar matrícula\n");
       printf("Escolha uma opção: ");
-      scanf("%d", & opcao_admin);
+      scanf("%d", &opcao_admin);
       getchar(); // Limpa o buffer de entrada
       switch (opcao_admin) {
       case 1:
@@ -211,9 +214,16 @@ void menu_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos, 
       case 2:
         printf("Digite o ID do aluno para remover a matrícula: ");
         int id;
-        scanf("%d", & id);
+        scanf("%d", &id);
         getchar(); // Limpa o buffer de entrada
-        excluir_matricula(matriculas, & num_matriculas, id);
+        excluir_matricula(matriculas, &num_matriculas, id);
+        break;
+      case 3:
+        printf("Digite o ID da matrícula para editar: ");
+        int idMatricula;
+        scanf("%d", &idMatricula);
+        getchar(); // Limpa o buffer de entrada
+        editar_matricula(matriculas, num_matriculas, idMatricula, cursos, num_cursos, alunos, num_alunos);
         break;
       default:
         printf("Opção inválida. Por favor, escolha uma opção válida.\n");
@@ -252,7 +262,8 @@ void exibir_matriculas(int idAluno, Curso cursos[], int num_cursos, Aluno alunos
     printf("\n======= Matrículas =======\n");
     for (int i = 0; i < num_matriculas; i++) {
       if (idAluno == -1 || matriculas[i].idAluno == idAluno) {
-        printf("ID do Aluno: %d, ID do Curso: %d, Data de Expiração: %s", matriculas[i].idAluno, matriculas[i].idCurso, ctime( & matriculas[i].dataExpiracao));
+        printf("ID da Matrícula: %d, ID do Aluno: %d, ID do Curso: %d, Data de Expiração: %s",
+               matriculas[i].id, matriculas[i].idAluno, matriculas[i].idCurso, ctime(&matriculas[i].dataExpiracao));
       }
     }
   } else {
@@ -265,57 +276,69 @@ void exibir_matriculas(int idAluno, Curso cursos[], int num_cursos, Aluno alunos
     printf("Escolha uma opção: ");
 
     int opcao;
-    scanf("%d", & opcao);
+    scanf("%d", &opcao);
     getchar(); // Limpa o buffer de entrada
     limpar_console();
     printf("\n======= Matrículas =======\n");
     switch (opcao) {
-    case 1:
-      for (int i = 0; i < num_matriculas; i++) {
-        printf("Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s", encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), ctime( & matriculas[i].dataExpiracao));
-      }
-      break;
-    case 2:
-      int idAlunoFiltro;
-      printf("Digite o ID do Aluno: ");
-      scanf("%d", & idAlunoFiltro);
-      getchar(); // Limpa o buffer de entrada
-      limpar_console();
-      for (int i = 0; i < num_matriculas; i++) {
-        if (matriculas[i].idAluno == idAlunoFiltro) {
-          printf("Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s", encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), ctime( & matriculas[i].dataExpiracao));
+      case 1:
+        for (int i = 0; i < num_matriculas; i++) {
+          printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s",
+                 matriculas[i].id, encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), 
+                 encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), 
+                 ctime(&matriculas[i].dataExpiracao));
         }
-      }
-      break;
-    case 3:
-      int idCursoFiltro;
-      printf("Digite o ID do Curso: ");
-      scanf("%d", & idCursoFiltro);
-      getchar(); // Limpa o buffer de entrada
-      limpar_console();
-      for (int i = 0; i < num_matriculas; i++) {
-        if (matriculas[i].idCurso == idCursoFiltro) {
-          printf("Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s", encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), ctime( & matriculas[i].dataExpiracao));
+        break;
+      case 2:
+        int idAlunoFiltro;
+        printf("Digite o ID do Aluno: ");
+        scanf("%d", &idAlunoFiltro);
+        getchar(); // Limpa o buffer de entrada
+        limpar_console();
+        for (int i = 0; i < num_matriculas; i++) {
+          if (matriculas[i].idAluno == idAlunoFiltro) {
+            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s",
+                   matriculas[i].id, encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), 
+                   encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), 
+                   ctime(&matriculas[i].dataExpiracao));
+          }
         }
-      }
-      break;
-    case 4:
-      time_t dataExpiracaoFiltro;
-      printf("Digite a data de expiração (em segundos desde o Epoch): ");
-      scanf("%ld", & dataExpiracaoFiltro);
-      getchar(); // Limpa o buffer de entrada
-      limpar_console();
-      for (int i = 0; i < num_matriculas; i++) {
-        if (matriculas[i].dataExpiracao == dataExpiracaoFiltro) {
-          printf("Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s", encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), ctime( & matriculas[i].dataExpiracao));
+        break;
+      case 3:
+        int idCursoFiltro;
+        printf("Digite o ID do Curso: ");
+        scanf("%d", &idCursoFiltro);
+        getchar(); // Limpa o buffer de entrada
+        limpar_console();
+        for (int i = 0; i < num_matriculas; i++) {
+          if (matriculas[i].idCurso == idCursoFiltro) {
+            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s",
+                   matriculas[i].id, encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), 
+                   encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), 
+                   ctime(&matriculas[i].dataExpiracao));
+          }
         }
-      }
-      break;
-    case 5:
-      printf("Retornando ao menu anterior...\n");
-      break;
-    default:
-      printf("Opção inválida. Por favor, escolha uma opção válida.\n");
+        break;
+      case 4:
+        time_t dataExpiracaoFiltro;
+        printf("Digite a data de expiração (em segundos desde o Epoch): ");
+        scanf("%ld", &dataExpiracaoFiltro);
+        getchar(); // Limpa o buffer de entrada
+        limpar_console();
+        for (int i = 0; i < num_matriculas; i++) {
+          if (matriculas[i].dataExpiracao == dataExpiracaoFiltro) {
+            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Data de Expiração: %s",
+                   matriculas[i].id, encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos), 
+                   encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos), 
+                   ctime(&matriculas[i].dataExpiracao));
+          }
+        }
+        break;
+      case 5:
+        printf("Retornando ao menu anterior...\n");
+        break;
+      default:
+        printf("Opção inválida. Por favor, escolha uma opção válida.\n");
     }
   }
 }
@@ -351,27 +374,37 @@ void cadastrar_curso(Curso cursos[], int * num_cursos) {
   printf("Curso adicionado com sucesso!\n");
 }
 
-void cadastrar_matricula(Matricula matriculas[], int * num_matriculas, int idAluno, Curso cursos[], int num_cursos) {
-  limpar_console();
-  int idCurso;
-  printf("Digite o ID do curso para se matricular: ");
-  scanf("%d", & idCurso);
-  getchar(); // Limpa o buffer de entrada
-  int encontrado = 0;
-  for (int i = 0; i < num_cursos; i++) {
-    if (cursos[i].id == idCurso) {
-      matriculas[ * num_matriculas].idAluno = idAluno;
-      matriculas[ * num_matriculas].idCurso = idCurso;
-      matriculas[ * num_matriculas].dataExpiracao = calcular_data_expiracao();
-      ( * num_matriculas) ++;
-      salvar_matriculas(matriculas, * num_matriculas);
-      encontrado = 1;
-      printf("Matrícula adicionada com sucesso!\n");
-      break;
+void cadastrar_matricula(Matricula matriculas[], int *num_matriculas, int idAluno, Curso cursos[], int num_cursos) {
+  if (*num_matriculas < MAX_MATRICULAS) { // Certifique-se de que há espaço para mais matrículas
+    Matricula nova_matricula;
+    nova_matricula.id = encontrar_proximo_id_matricula(matriculas, *num_matriculas);
+    nova_matricula.idAluno = idAluno;
+
+    printf("Digite o ID do curso para a matrícula: ");
+    scanf("%d", &nova_matricula.idCurso);
+    getchar(); // Limpa o buffer de entrada
+
+    // Verifica se o curso existe
+    int curso_existe = 0;
+    for (int i = 0; i < num_cursos; i++) {
+      if (cursos[i].id == nova_matricula.idCurso) {
+        curso_existe = 1;
+        break;
+      }
     }
-  }
-  if (!encontrado) {
-    printf("Curso com ID %d não encontrado.\n", idCurso);
+    if (!curso_existe) {
+      printf("Curso com ID %d não encontrado.\n", nova_matricula.idCurso);
+      return;
+    }
+
+    nova_matricula.dataExpiracao = calcular_data_expiracao();
+
+    matriculas[*num_matriculas] = nova_matricula;
+    (*num_matriculas)++;
+    
+    printf("Matrícula cadastrada com sucesso.\n");
+  } else {
+    printf("Número máximo de matrículas atingido.\n");
   }
 }
 
@@ -420,6 +453,52 @@ void editar_curso(Curso cursos[], int num_cursos) {
     }
   }
   printf("Curso com ID %d não encontrado.\n", id);
+}
+
+void editar_matricula(Matricula matriculas[], int num_matriculas, int idMatricula, Curso cursos[], int num_cursos, Aluno alunos[], int num_alunos) {
+  int encontrado = 0;
+  limpar_console();
+  for (int i = 0; i < num_matriculas; i++) {
+    if (matriculas[i].id == idMatricula) {
+      encontrado = 1;
+      printf("Editar Matrícula:\n");
+      printf("Aluno atual: %s\n", encontrar_nome_aluno(matriculas[i].idAluno, alunos, num_alunos));
+      printf("Curso atual: %s\n", encontrar_nome_curso(matriculas[i].idCurso, cursos, num_cursos));
+      printf("Data de Expiração atual: %s\n", ctime(&matriculas[i].dataExpiracao));
+
+      printf("Digite o novo ID do aluno (ou -1 para manter o atual): ");
+      int novoIdAluno;
+      scanf("%d", &novoIdAluno);
+      getchar(); // Limpa o buffer de entrada
+      if (novoIdAluno != -1) {
+        matriculas[i].idAluno = novoIdAluno;
+      }
+
+      printf("Digite o novo ID do curso (ou -1 para manter o atual): ");
+      int novoIdCurso;
+      scanf("%d", &novoIdCurso);
+      getchar(); // Limpa o buffer de entrada
+      if (novoIdCurso != -1) {
+        matriculas[i].idCurso = novoIdCurso;
+      }
+
+      printf("Digite a nova data de expiração (em segundos desde o Epoch, ou -1 para manter a atual): ");
+      time_t novaDataExpiracao;
+      scanf("%ld", &novaDataExpiracao);
+      getchar(); // Limpa o buffer de entrada
+      if (novaDataExpiracao != -1) {
+        matriculas[i].dataExpiracao = novaDataExpiracao;
+      }
+
+      salvar_matriculas(matriculas, num_matriculas);
+      printf("Matrícula editada com sucesso!\n");
+      break;
+    }
+  }
+
+  if (!encontrado) {
+    printf("Matrícula com ID %d não encontrada.\n", idMatricula);
+  }
 }
 
 void excluir_aluno(Aluno alunos[], int * num_alunos, Matricula matriculas[], int num_matriculas) {
@@ -579,10 +658,10 @@ void salvar_cursos(Curso cursos[], int num_cursos) {
 }
 
 void salvar_matriculas(Matricula matriculas[], int num_matriculas) {
-  FILE * arquivo = fopen("matriculas.txt", "w");
+  FILE *arquivo = fopen("matriculas.txt", "w");
   if (arquivo != NULL) {
     for (int i = 0; i < num_matriculas; i++) {
-      fprintf(arquivo, "%d %d %ld\n", matriculas[i].idAluno, matriculas[i].idCurso, matriculas[i].dataExpiracao);
+      fprintf(arquivo, "%d %d %d %ld\n", matriculas[i].id, matriculas[i].idAluno, matriculas[i].idCurso, matriculas[i].dataExpiracao);
     }
     fclose(arquivo);
   } else {
@@ -616,12 +695,12 @@ void carregar_cursos(Curso cursos[], int * num_cursos) {
   }
 }
 
-void carregar_matriculas(Matricula matriculas[], int * num_matriculas) {
-  FILE * arquivo = fopen("matriculas.txt", "r");
+void carregar_matriculas(Matricula matriculas[], int *num_matriculas) {
+  FILE *arquivo = fopen("matriculas.txt", "r");
   if (arquivo != NULL) {
-    * num_matriculas = 0;
-    while (fscanf(arquivo, "%d %d %ld\n", & matriculas[ * num_matriculas].idAluno, & matriculas[ * num_matriculas].idCurso, & matriculas[ * num_matriculas].dataExpiracao) != EOF) {
-      ( * num_matriculas) ++;
+    *num_matriculas = 0;
+    while (fscanf(arquivo, "%d %d %d %ld", &matriculas[*num_matriculas].id, &matriculas[*num_matriculas].idAluno, &matriculas[*num_matriculas].idCurso, &matriculas[*num_matriculas].dataExpiracao) != EOF) {
+      (*num_matriculas)++;
     }
     fclose(arquivo);
   } else {
