@@ -1175,43 +1175,43 @@ void login_admin(Aluno alunos[], int num_alunos, Curso cursos[], int num_cursos,
 
 int main() {
     Aluno alunos[MAX_ALUNOS];
-    int num_alunos = 0;
     Curso cursos[MAX_CURSOS];
-    int num_cursos = 0;
     Matricula matriculas[MAX_MATRICULAS];
-    int num_matriculas = 0;
     Vencimento vencimentos[MAX_VENCIMENTOS];
-    int num_vencimentos = 0;
+    int num_alunos = 0, num_cursos = 0, num_matriculas = 0, num_vencimentos = 0;
 
-    carregar_alunos(alunos, &num_alunos);
-    carregar_cursos(cursos, &num_cursos);
-    carregar_matriculas(matriculas, &num_matriculas);
+  int opcao;
+  do {
+    carregar_alunos(alunos, & num_alunos);
+    carregar_cursos(cursos, & num_cursos);
+    carregar_matriculas(matriculas, & num_matriculas);
     carregar_vencimentos(vencimentos, &num_vencimentos);
+    limpar_console();
+    menu_login();
+    scanf("%d", & opcao);
+    getchar(); // Limpa o buffer de entrada
+    limpar_console();
 
-    int opcao;
-    do {
-        printf("\n======= Menu Principal =======\n");
-        printf("1. Login Aluno\n");
-        printf("2. Login Administrador\n");
-        printf("3. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        getchar(); // Limpa o buffer de entrada
+    switch (opcao) {
+    case 1: {
+      int id = login(alunos, num_alunos);
+      limpar_console();
+      if (id == -1) {
+        menu_admin(alunos, num_alunos, cursos, num_cursos, matriculas, num_matriculas, vencimentos, num_vencimentos);
+      } else if (id > 0) {
+        menu_aluno(id, alunos, num_alunos, cursos, num_cursos, matriculas, num_matriculas,  vencimentos, num_vencimentos);
+      } else {
+        printf("Nome de usuário ou senha inválidos. Por favor, tente novamente.\n");
+      }
+      break;
+    }
+    case 2:
+      printf("Encerrando o programa...\n");
+      break;
+    default:
+      printf("Opção inválida. Por favor, escolha uma opção válida.\n");
+    }
+  } while (opcao != 2);
 
-        switch (opcao) {
-            case 1:
-                login_aluno(alunos, num_alunos, cursos, num_cursos, matriculas, &num_matriculas, vencimentos, &num_vencimentos);
-                break;
-            case 2:
-                login_admin(alunos, num_alunos, cursos, num_cursos, matriculas, &num_matriculas, vencimentos, &num_vencimentos);
-                break;
-            case 3:
-                printf("Saindo...\n");
-                break;
-            default:
-                printf("Opção inválida. Por favor, escolha uma opção válida.\n");
-        }
-    } while (opcao != 3);
-
-    return 0;
+  return 0;
 }
