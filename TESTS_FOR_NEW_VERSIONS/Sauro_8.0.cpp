@@ -583,110 +583,112 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
             current = current->next;
         }
     } else {
-    	
-        printf("\n======= Matrículas =======\n");
-        printf("1. Exibir todas as matrículas\n");
-        printf("2. Filtrar por ID do Aluno\n");
-        printf("3. Filtrar por ID do Curso\n");
-        printf("4. Filtrar por Número de Meses\n");
-        printf("5. Voltar ao menu anterior\n");
-        printf("Escolha uma opção: ");
-
-        int opcao;
-        scanf("%d", &opcao);
-        getchar(); // Limpa o buffer de entrada
-        limpar_console();
-        printf("\n======= Matrículas =======\n");
-		
-        Matricula* current;
-        switch (opcao) {
-            case 1:
-                current = matriculas;
-                while (current != NULL) {
-                    Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
-                    Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
-                    printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
-                           current->id, 
-                           aluno != NULL ? aluno->nome : "Aluno não encontrado", 
-                           curso != NULL ? curso->nome : "Curso não encontrado", 
-                           current->meses);
-                           
-                    current = current->next;
-                }
-                
-                break;
-            case 2:
-                {
-                    int idAlunoFiltro;
-                    printf("Digite o ID do Aluno: ");
-                    scanf("%d", &idAlunoFiltro);
-                    getchar(); // Limpa o buffer de entrada
-                    limpar_console();
-                    current = matriculas;
-                    while (current != NULL) {
-                        if (current->idAluno == idAlunoFiltro) {
-                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
-                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
-                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
-                                   current->id, 
-                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
-                                   curso != NULL ? curso->nome : "Curso não encontrado", 
-                                   current->meses);
-                        }
-                        current = current->next;
-                    }
-                }
-                break;
-            case 3:
-                {
-                    int idCursoFiltro;
-                    printf("Digite o ID do Curso: ");
-                    scanf("%d", &idCursoFiltro);
-                    getchar(); // Limpa o buffer de entrada
-                    limpar_console();
-                    current = matriculas;
-                    while (current != NULL) {
-                        if (current->idCurso == idCursoFiltro) {
-                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
-                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
-                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
-                                   current->id, 
-                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
-                                   curso != NULL ? curso->nome : "Curso não encontrado", 
-                                   current->meses);
-                        }
-                        current = current->next;
-                    }
-                }
-                break;
-            case 4:
-                {
-                    int mesesFiltro;
-                    printf("Digite o número de meses: ");
-                    scanf("%d", &mesesFiltro);
-                    getchar(); // Limpa o buffer de entrada
-                    limpar_console();
-                    current = matriculas;
-                    while (current != NULL) {
-                        if (current->meses == mesesFiltro) {
-                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
-                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
-                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
-                                   current->id, 
-                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
-                                   curso != NULL ? curso->nome : "Curso não encontrado", 
-                                   current->meses);
-                        }
-                        current = current->next;
-                    }
-                }
-                break;
-            case 5:
-                printf("Retornando ao menu anterior...\n");
-                break;
-            default:
-                printf("Opção inválida. Por favor, escolha uma opção válida.\n");
-        }
+    	int opcao;
+    	do{
+	        printf("\n======= Matrículas =======\n");
+	        printf("1. Exibir todas as matrículas\n");
+	        printf("2. Filtrar por ID do Aluno\n");
+	        printf("3. Filtrar por ID do Curso\n");
+	        printf("4. Filtrar por Número de Meses\n");
+	        printf("5. Voltar ao menu anterior\n");
+	        printf("Escolha uma opção: ");
+	
+	        
+	        scanf("%d", &opcao);
+	        getchar(); // Limpa o buffer de entrada
+	        limpar_console();
+	        printf("\n======= Matrículas =======\n");
+			
+	        Matricula* current;
+	        switch (opcao) {
+	            case 1:
+	                current = matriculas;
+	                while (current != NULL) {
+	                    Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
+	                    Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
+	                    printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
+	                           current->id, 
+	                           aluno != NULL ? aluno->nome : "Aluno não encontrado", 
+	                           curso != NULL ? curso->nome : "Curso não encontrado", 
+	                           current->meses);
+	                           
+	                    current = current->next;
+	                }
+	                
+	                break;
+	            case 2:
+	                {
+	                    int idAlunoFiltro;
+	                    printf("Digite o ID do Aluno: ");
+	                    scanf("%d", &idAlunoFiltro);
+	                    getchar(); // Limpa o buffer de entrada
+	                    limpar_console();
+	                    current = matriculas;
+	                    while (current != NULL) {
+	                        if (current->idAluno == idAlunoFiltro) {
+	                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
+	                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
+	                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
+	                                   current->id, 
+	                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
+	                                   curso != NULL ? curso->nome : "Curso não encontrado", 
+	                                   current->meses);
+	                        }
+	                        current = current->next;
+	                    }
+	                }
+	                break;
+	            case 3:
+	                {
+	                    int idCursoFiltro;
+	                    printf("Digite o ID do Curso: ");
+	                    scanf("%d", &idCursoFiltro);
+	                    getchar(); // Limpa o buffer de entrada
+	                    limpar_console();
+	                    current = matriculas;
+	                    while (current != NULL) {
+	                        if (current->idCurso == idCursoFiltro) {
+	                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
+	                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
+	                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
+	                                   current->id, 
+	                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
+	                                   curso != NULL ? curso->nome : "Curso não encontrado", 
+	                                   current->meses);
+	                        }
+	                        current = current->next;
+	                    }
+	                }
+	                break;
+	            case 4:
+	                {
+	                    int mesesFiltro;
+	                    printf("Digite o número de meses: ");
+	                    scanf("%d", &mesesFiltro);
+	                    getchar(); // Limpa o buffer de entrada
+	                    limpar_console();
+	                    current = matriculas;
+	                    while (current != NULL) {
+	                        if (current->meses == mesesFiltro) {
+	                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
+	                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
+	                            printf("ID da Matrícula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
+	                                   current->id, 
+	                                   aluno != NULL ? aluno->nome : "Aluno não encontrado", 
+	                                   curso != NULL ? curso->nome : "Curso não encontrado", 
+	                                   current->meses);
+	                        }
+	                        current = current->next;
+	                    }
+	                }
+	                break;
+	            case 5:
+	                printf("Retornando ao menu anterior...\n");
+	                break;
+	            default:
+	                printf("Opção inválida. Por favor, escolha uma opção válida.\n");
+	        }
+    	}while(opcao != 5);
     }
 }
 
