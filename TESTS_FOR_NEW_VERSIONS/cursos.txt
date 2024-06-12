@@ -1,2 +1,1 @@
-1,matematica,1000.00,12
-2,fisica,32000.00,24
+1,matematica,22000.00,36

@@ -1048,7 +1048,7 @@ Matricula* carregar_matriculas(Curso* cursos) {
     while (fgets(linha, sizeof(linha), file)) {
         Matricula* nova_matricula = (Matricula*)malloc(sizeof(Matricula));
 
-        sscanf(linha, "%d %d %d %d", &nova_matricula->id, &nova_matricula->idAluno, &nova_matricula->idCurso, &nova_matricula->meses);
+        sscanf(linha, "%d,%d,%d,%d", &nova_matricula->id, &nova_matricula->idAluno, &nova_matricula->idCurso, &nova_matricula->meses);
         nova_matricula->next = NULL;
         nova_matricula->vencimentos = carregar_vencimentos(nova_matricula->id);
 
@@ -1132,7 +1132,7 @@ void salvar_alunos(Aluno* alunos) {
   FILE * arquivo = fopen("alunos.txt", "w");
   if (arquivo != NULL) {
     while (alunos != NULL) {
-      fprintf(arquivo, "%d %s %s\n", alunos->id, alunos->nome, alunos->senha);
+      fprintf(arquivo, "%d,%s,%s\n", alunos->id, alunos->nome, alunos->senha);
       alunos = alunos->next;
     }
     fclose(arquivo);
@@ -1145,7 +1145,7 @@ void salvar_cursos(Curso* cursos) {
   FILE * arquivo = fopen("cursos.txt", "w");
   if (arquivo != NULL) {
     while (cursos != NULL) {
-      fprintf(arquivo, "%d %s %.2f %d\n", cursos->id, cursos->nome, cursos->precoPorMes, cursos->numParcelas);
+      fprintf(arquivo, "%d,%s,%.2f,%d\n", cursos->id, cursos->nome, cursos->precoPorMes, cursos->numParcelas);
       cursos = cursos->next;
     }
     fclose(arquivo);
@@ -1158,7 +1158,7 @@ void salvar_matriculas(Matricula* matriculas) {
   FILE *arquivo = fopen("matriculas.txt", "w");
   if (arquivo != NULL) {
     while (matriculas != NULL) {
-      fprintf(arquivo, "%d %d %d %d\n", matriculas->id, matriculas->idAluno, matriculas->idCurso, matriculas->meses);
+      fprintf(arquivo, "%d,%d,%d,%d\n", matriculas->id, matriculas->idAluno, matriculas->idCurso, matriculas->meses);
       matriculas = matriculas->next;
     }
     fclose(arquivo);
