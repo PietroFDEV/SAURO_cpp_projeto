@@ -451,9 +451,11 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             printf("2. Editar aluno\n");
             printf("3. Excluir aluno\n");
             printf("4. Ver alunos\n");
+            printf("5. Voltar\n");
             printf("Escolha uma opcao: ");
             scanf("%d", &opcao_admin);
             getchar(); // Limpa o buffer de entrada
+            limpar_console();
             switch (opcao_admin) {
             case 1:
                 cadastrar_aluno(alunos);
@@ -467,6 +469,8 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             case 4:
                 exibir_alunos(*alunos);
                 break;
+            case 5:
+            	break;
             default:
                 printf("Opcao invalida. Por favor, escolha uma opcao valida.\n");
             }
@@ -481,6 +485,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             printf("Escolha uma opcao: ");
             scanf("%d", &opcao_admin);
             getchar(); // Limpa o buffer de entrada
+            limpar_console();
             switch (opcao_admin) {
             case 1:
                 cadastrar_curso(cursos);
@@ -507,6 +512,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             printf("Escolha uma opcao: ");
             scanf("%d", &opcao_admin);
             getchar(); // Limpa o buffer de entrada
+            limpar_console();
             switch (opcao_admin) {
             case 1:
                 exibir_matriculas(-1, *cursos, *alunos, *matriculas); // Exibir todas as matriculas
@@ -560,7 +566,7 @@ void exibir_alunos(Aluno* alunos) {
   printf("\n======= Alunos Cadastrados =======\n");
   Aluno* current = alunos;
   while (current != NULL) {
-    printf("ID: %d, Nome: %s\n", current->id, current->nome);
+    printf("ID: %d, Nome: %s, Senha: %s\n", current->id, current->nome, current->senha);
     current = current->next;
   }
 }
@@ -765,8 +771,9 @@ void cadastrar_matricula(Matricula** matriculas, int idAluno, Curso* cursos) {
 }
 
 void editar_aluno(Aluno* alunos) {
+  exibir_alunos(alunos);
   int id;
-  printf("Digite o ID do aluno a ser editado: ");
+  printf("\nDigite o ID do aluno a ser editado: ");
   scanf("%d", &id);
   getchar(); // Limpa o buffer de entrada
   Aluno* current = alunos;
@@ -788,8 +795,9 @@ void editar_aluno(Aluno* alunos) {
 }
 
 void editar_curso(Curso* cursos) {
+  exibir_cursos(cursos);
   int id;
-  printf("Digite o ID do curso a ser editado: ");
+  printf("\nDigite o ID do curso a ser editado: ");
   scanf("%d", &id);
   getchar(); // Limpa o buffer de entrada
   Curso* current = cursos;
@@ -814,7 +822,7 @@ void editar_curso(Curso* cursos) {
 
 void editar_matricula(Matricula* matricula, Curso* cursos, Aluno* alunos) {
     // Prompt user for new course ID and subscription months
-    printf("Digite o novo ID do curso: ");
+    printf("\nDigite o novo ID do curso: ");
     scanf("%d", &matricula->idCurso);
     getchar(); // Limpa o buffer de entrada
     printf("Digite a nova quantidade de meses para a matricula: ");
