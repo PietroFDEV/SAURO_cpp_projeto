@@ -55,9 +55,9 @@ void excluir_curso(Curso** cursos, Matricula** matriculas);
 void excluir_matricula(Matricula** matriculas, int idAluno);
 void exibir_alunos(Aluno* alunos);
 void exibir_cursos(Curso* cursos);
-void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* matriculas);
+void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* matriculas, Vencimento* vencimentos);
 void limpar_console();
-void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas);
+void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimento** vencimentos);
 void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas, Vencimento* vencimentos);
 void menu_login();
 int login(Aluno* alunos);
@@ -69,6 +69,7 @@ time_t parse_date(const char* date_str);
 Matricula* carregar_matriculas(Curso* cursos);
 Aluno* encontrar_aluno_por_id(int idAluno, Aluno* alunos);
 Curso* encontrar_curso_por_id(int idCurso, Curso* cursos);
+Matricula* encontrar_matricula_por_id(int idMatricula, Matricula* matriculas);
 Vencimento* carregar_vencimentos_aluno(int idMatricula);
 void salvar_alunos(Aluno* alunos);
 void salvar_cursos(Curso* cursos);
@@ -79,11 +80,11 @@ int custom_strptime(const char *buf, const char *format, struct tm *tm);
 // Funcões relacionadas aos vencimentos
 Vencimento* criar_vencimento(int id, time_t data, float valor, int pago);
 //void adicionar_vencimento(Matricula* matricula, time_t data, float valor, int pago);
-void exibir_vencimentos(Vencimento* vencimentos, const char* nomeAluno, int idMatricula);
+void exibir_vencimentos(Vencimento* vencimentos, Aluno* alunos, Matricula* matriculas);
 void salvar_vencimentos(Vencimento* vencimentos);
 void liberar_vencimentos(Vencimento* vencimentos);
-void excluir_vencimento_admin(Matricula* matriculas);
-void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos);
+void excluir_vencimento_admin(Matricula* matriculas, Vencimento* vencimentos);
+void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos, Vencimento* vencimentos);
 void editar_vencimento_admin(Matricula* matriculas);
 void criar_vencimento_admin(Matricula* matriculas, Curso* cursos);
 void pagar_vencimento(int idAluno, Matricula* matriculas, Aluno* alunos);
@@ -120,35 +121,45 @@ Vencimento* criar_vencimento(int id, time_t data, float valor, int pago) {
 //   matricula->vencimentos = novo_vencimento;
 //}
 
-void exibir_vencimentos(Vencimento* vencimentos, char* nomeAluno, int idMatricula) {
-    printf("\n======= Vencimentos =======\n");
-    printf("Nome do Aluno: %s - ID da Matricula: %d\n", nomeAluno, idMatricula);
-    while (vencimentos != NULL) {
-        char data_str[100];
-        struct tm* data = localtime(&vencimentos->data);
+void exibir_vencimentos(Vencimento* vencimentos, Aluno* alunos, Matricula* matriculas) {
+	printf("\n======= Vencimentos =======\n");
+	Vencimento* currentV = vencimentos;
+	if(currentV != NULL){
+		while(currentV != NULL){
+		Matricula* matricula = encontrar_matricula_por_id(currentV->matriculaId, matriculas);
+    	Aluno* aluno = encontrar_aluno_por_id(matricula->idAluno, alunos);
+    	char data_str[100];
+        struct tm* data = localtime(&currentV->data);
         strftime(data_str, sizeof(data_str), "%d/%m/%Y", data);
-        printf("ID: %d - Data: %s - Valor: %.2f - Pago: %s\n", vencimentos->id, data_str, vencimentos->valor, vencimentos->pago == 0 ? "Nao" : "Sim");
-        vencimentos = vencimentos->next;
-    }
+        printf("Matricula: %d - Aluno: %s - Vencimento: %d - Data: %s - Valor: %.2f - Pago: %s\n", matricula->id, aluno->nome, currentV->id, data_str, currentV->valor, currentV->pago == 0 ? "Nao" : "Sim");
+		currentV = currentV->next;
+		}
+		printf("\nPressione Enter para continuar...\n");
+	    getchar(); 
+	} else {
+		printf("\nNenhum vencimento encontrado.");
+		printf("\nPressione Enter para continuar...\n");
+        getchar();
+	}
+	
 }
 
-void salvar_vencimentos(Vencimento* vencimentos) {
+void salvar_vencimentos(Vencimento *vencimentos) {
     FILE* file = fopen("vencimentos.txt", "w");
     if (!file) {
         perror("Erro ao abrir o arquivo de vencimentos");
         return;
     }
-
-    Vencimento* current = vencimentos;
-    while (current != NULL) {
-        fprintf(file, "%d,%d,%ld,%.2f,%d\n", current->id, current->matriculaId, current->data, current->valor, current->pago);
-        current = current->next;
-    }
-
+    
+    while(vencimentos != NULL){
+    	fprintf(file, "%d,%d,%ld,%.2f,%d\n", vencimentos->id, vencimentos->matriculaId, vencimentos->data, vencimentos->valor, vencimentos->pago);
+    	vencimentos = vencimentos->next;
+	}
+    
     fclose(file);
 }
 
-void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos) {
+void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos, Vencimento* vencimentos) {
     int opcao;
     do {
     	limpar_console();
@@ -173,24 +184,11 @@ void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos)
             //    break;
             case 2:
             	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Excluir =======\n");
-                excluir_vencimento_admin(matriculas);
+                excluir_vencimento_admin(matriculas, vencimentos);
                 break;
             case 1:{
             	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Exibir =======\n");
-			    Matricula* currentMatricula = matriculas;
-			    if(currentMatricula != NULL){
-			    	while (currentMatricula != NULL) {
-				        Aluno* aluno = encontrar_aluno_por_id(currentMatricula->idAluno, alunos);
-				        exibir_vencimentos(currentMatricula->vencimentos, aluno->nome, currentMatricula->id);
-				        currentMatricula = currentMatricula->next;
-			    	}
-			    	printf("\nPressione Enter para continuar...\n");
-        			getchar();
-				} else {
-					printf("\nNenhum vencimento encontrado.");
-					printf("\nPressione Enter para continuar...\n");
-        			getchar();
-				}
+			    exibir_vencimentos(vencimentos, alunos, matriculas);
 			    break;
 			}
             case 3:
@@ -209,7 +207,7 @@ void liberar_vencimentos(Vencimento* vencimentos) {
     }
 }
 
-void excluir_vencimento_admin(Matricula* matriculas) {
+void excluir_vencimento_admin(Matricula* matriculas, Vencimento* vencimentos) {
     int idMatricula;
     printf("Informe o ID da matricula: ");
     scanf("%d", &idMatricula);
@@ -217,37 +215,40 @@ void excluir_vencimento_admin(Matricula* matriculas) {
     Matricula* matricula = matriculas;
     while (matricula != NULL) {
         if (matricula->id == idMatricula) {
-            time_t data;
-            struct tm tm_data;
-            char data_str[100];
-
-            printf("Informe a data do vencimento a excluir (dd/mm/aaaa): ");
-            scanf("%s", data_str);
-            if (!custom_strptime(data_str, "%d/%m/%Y", &tm_data)) {
-                printf("Formato de data invalido.\n");
-                return;
-            }
-            data = mktime(&tm_data);
-
-            Vencimento** vencimento_ptr = &matricula->vencimentos;
-            while (*vencimento_ptr != NULL) {
-                if (difftime((*vencimento_ptr)->data, data) == 0) {
-                    Vencimento* temp = *vencimento_ptr;
-                    *vencimento_ptr = (*vencimento_ptr)->next;
-                    free(temp);
-                    salvar_vencimentos(matricula->vencimentos);
-                    printf("\nVencimento excluido com sucesso.\n");
-                    return;
-                }
-                vencimento_ptr = &(*vencimento_ptr)->next;
-            }
-            printf("\nVencimento nao encontrado.\n");
-            return;
+        	int idVencimento;
+            printf("Informe o id do vencimento a excluir: ");
+            scanf("%d", &idVencimento);
+            Vencimento* previous = NULL;
+            Vencimento* vencimento = vencimentos;
+            while(vencimento != NULL){
+            	if(vencimento->id == idVencimento){
+            		if(previous == NULL){
+            			vencimentos = vencimento->next;
+					} else {
+						previous->next = vencimento->next;
+					}
+					free(vencimento);
+					salvar_vencimentos(vencimentos);
+					printf("\nVencimento excluido com sucesso.\n");
+					printf("\nPressione Enter para continuar...\n");
+        			getchar();
+        			getchar();
+					return;
+				}
+				previous = vencimento;
+				vencimento = vencimento->next;
+			}
+			printf("\nVencimento nao encontrado.\n");
+			printf("\nPressione Enter para continuar...\n");
+        	getchar();
         }
         matricula = matricula->next;
     }
     printf("\nMatricula nao encontrada.\n");
+    printf("\nPressione Enter para continuar...\n");
+    getchar();
 }
+
 
 void editar_vencimento_admin(Matricula* matriculas) {
     int idMatricula;
@@ -278,7 +279,7 @@ void editar_vencimento_admin(Matricula* matriculas) {
                     printf("Informe o novo status de pagamento (0 para nao pago, 1 para pago): ");
                     scanf("%d", &vencimento->pago);
 
-                    salvar_vencimentos(matricula->vencimentos);
+                    //salvar_vencimentos(matriculas);
                     printf("\nVencimento editado com sucesso.\n");
                     return;
                 }
@@ -322,7 +323,7 @@ void criar_vencimento_admin(Matricula* matriculas, Curso* cursos) {
 	            scanf("%d", &pago);
 	
 	            //adicionar_vencimento(matricula, data, valor, pago);
-	            salvar_vencimentos(matricula->vencimentos);
+	            //salvar_vencimentos(matriculas);
 	            printf("\nVencimento criado com sucesso.\n");
 	            return;
 	        }
@@ -335,23 +336,24 @@ void criar_vencimento_admin(Matricula* matriculas, Curso* cursos) {
 	}
 }
 
-void pagar_vencimento(int idAluno, Matricula* matriculas, Aluno* alunos) {
+void pagar_vencimento(int idAluno, Matricula* matriculas, Aluno* alunos, Vencimento* vencimentos) {
     Matricula* matricula = matriculas;
     while (matricula != NULL) {
         if (matricula->idAluno == idAluno) {
         	Aluno* aluno = encontrar_aluno_por_id(matricula->idAluno, alunos);
-        	exibir_vencimentos(matricula->vencimentos, aluno->nome, matricula->id);
+        	
+        	//exibir_vencimentos(matricula->vencimentos, aluno->nome, matricula->id);
         	
         	int idVenc;
         	printf("\nInforme o ID do vencimento que deseja pagar: ");
 	        scanf("%d", &idVenc);
         	
-            Vencimento* vencimento = matricula->vencimentos;
+            Vencimento* vencimento = vencimentos;
             
             while(vencimento != NULL){
-            	if(vencimento->id == idVenc){
+            	if(vencimento->matriculaId == matricula->id && vencimento->id == idVenc){
             		vencimento->pago = 1;
-            		salvar_vencimentos(matricula->vencimentos);
+            		salvar_vencimentos(vencimentos);
 	                printf("Vencimento pago com sucesso.\n");
 	                printf("\nPressione Enter para continuar...\n");
 					getchar();
@@ -414,7 +416,7 @@ void menu_login() {
   printf("\nEscolha uma opcao: ");
 }
 
-void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas, Vencimento* vencimentos) {
+void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas, Vencimento** vencimentos) {
 	Aluno* logado = alunos;
 	while(logado != NULL){
 		if(logado->id == idAluno){
@@ -440,27 +442,35 @@ void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas
 	  						getchar();
 					      	break;
 					    case 2:
-					    	exibir_matriculas(idAluno, cursos, alunos, matriculas);
+					    	exibir_matriculas(idAluno, cursos, alunos, matriculas, *vencimentos);
 					    	printf("\nPressione Enter para continuar...\n");
 	  						getchar();
 					      	break;
 					    case 3:
-							cadastrar_matricula(&matriculas, idAluno, cursos, &vencimentos);
+							cadastrar_matricula(&matriculas, idAluno, cursos, vencimentos);
 							printf("\nPressione Enter para continuar...\n");
 	  						getchar();
 					      	break;
 					    case 4: {
-				            Matricula* currentMatricula = matriculas;
-				            if(currentMatricula != NULL){
-				            	while (currentMatricula != NULL) {
-					                if (currentMatricula->idAluno == idAluno) {
-					                    Aluno* aluno = encontrar_aluno_por_id(currentMatricula->idAluno, alunos);
-					                    exibir_vencimentos(currentMatricula->vencimentos, aluno->nome, currentMatricula->id);
-					                }
-					                currentMatricula = currentMatricula->next;
-				            	}
-				            	printf("\nPressione Enter para continuar...\n");
-	  							getchar();
+					    	Matricula* currentMatricula = matriculas;
+					    	if(currentMatricula != NULL){
+					    		while (currentMatricula != NULL) {
+					    			if(currentMatricula->idAluno == idAluno){
+					    				Vencimento* currentV = *vencimentos;
+								    	while(currentV != NULL){
+							    			if(currentV->matriculaId == currentMatricula->id){
+							    				char data_str[100];
+										        struct tm* data = localtime(&currentV->data);
+										        strftime(data_str, sizeof(data_str), "%d/%m/%Y", data);
+										        printf("Matricula: %d|Aluno: %s|Vencimento ID: %d|Data: %s|Valor: %.2f|Pago: %s\n", currentMatricula->id, logado->nome, currentV->id, data_str, currentV->valor, currentV->pago == 0 ? "Nao" : "Sim");
+											}
+											currentV = currentV->next;
+										}
+										printf("\nPressione Enter para continuar...\n");
+			  							getchar();
+									}
+									currentMatricula = currentMatricula->next;
+								}
 							} else {
 								printf("Nenhum vencimento encontrado.\n");
 								printf("\nPressione Enter para continuar...\n");
@@ -468,9 +478,33 @@ void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas
 							}
 							break;
 						}
-					    case 5:
-					      pagar_vencimento(idAluno, matriculas, alunos);
-					      break;
+					    case 5: {
+					    	Matricula* currentMatricula = matriculas;
+					    	if(currentMatricula != NULL){
+					    		while (currentMatricula != NULL) {
+					    			if(currentMatricula->idAluno == idAluno){
+					    				Vencimento* currentV = *vencimentos;
+								    	while(currentV != NULL){
+							    			if(currentV->matriculaId == currentMatricula->id){
+							    				char data_str[100];
+										        struct tm* data = localtime(&currentV->data);
+										        strftime(data_str, sizeof(data_str), "%d/%m/%Y", data);
+										        printf("Matricula: %d|Aluno: %s|Vencimento ID: %d|Data: %s|Valor: %.2f|Pago: %s\n", currentMatricula->id, logado->nome, currentV->id, data_str, currentV->valor, currentV->pago == 0 ? "Nao" : "Sim");
+											}
+											currentV = currentV->next;
+										}
+									}
+									currentMatricula = currentMatricula->next;
+								}
+							} else {
+								printf("Nenhum vencimento encontrado.\n");
+								printf("\nPressione Enter para continuar...\n");
+	  							getchar();
+	  							break;
+							}
+					    	pagar_vencimento(idAluno, matriculas, alunos, *vencimentos);
+					    	break;
+						}
 					    case 6:
 					      printf("Saindo...\n");
 					      break;
@@ -484,7 +518,7 @@ void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas
   
 }
 
-void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
+void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimento** vencimentos) {
     int opcao_admin_menu;
     do {
     	limpar_console();
@@ -516,8 +550,6 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             switch (opcao_admin) {
             case 1:
                 cadastrar_aluno(alunos);
-                //printf("\nPressione Enter para continuar...\n");
-        		//getchar();
                 break;
             case 2:
                 editar_aluno(*alunos);
@@ -562,6 +594,8 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
                 break;
             case 4:
                 exibir_cursos(*cursos);
+                printf("\nPressione Enter para continuar...\n");
+        		getchar();
                 break;
             case 5:
             	break;
@@ -582,7 +616,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             limpar_console();
             switch (opcao_admin) {
             case 1:
-                exibir_matriculas(-1, *cursos, *alunos, *matriculas); // Exibir todas as matriculas
+                exibir_matriculas(-1, *cursos, *alunos, *matriculas, *vencimentos); // Exibir todas as matriculas
                 break;
             case 2:
                 printf("Digite o ID da matricula para remover: ");
@@ -605,7 +639,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas) {
             }
             break;
         case 4:
-            menu_admin_vencimentos(*matriculas, *cursos, *alunos);
+            menu_admin_vencimentos(*matriculas, *cursos, *alunos, *vencimentos);
             break;
         case 5:
             printf("Saindo...\n");
@@ -645,7 +679,7 @@ void exibir_alunos(Aluno* alunos) {
   }
 }
 
-void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* matriculas) {
+void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* matriculas, Vencimento* vencimentos) {
     if (idAluno != -1) {
     	limpar_console();
         printf("======= Matriculas =======\n");
@@ -676,9 +710,9 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	        printf("======= Matriculas =======\n");
 	        printf("1. Exibir todas as matriculas\n");
 	        printf("2. Filtrar por ID do Aluno\n");
-	        printf("3. Filtrar por ID do Curso\n");
+	        //printf("3. Filtrar por ID do Curso\n");
 	        printf("4. Filtrar por Numero de Meses\n");
-	        printf("5. Voltar ao menu anterior\n");
+	        printf("5. Voltar\n");
 	        printf("\nEscolha uma opcao: ");
 	
 	        
@@ -729,10 +763,31 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	                                curso != NULL ? curso->nome : "Curso nao encontrado", 
 	                                current->meses
 								);
-								exibir_vencimentos(current->vencimentos, aluno->nome, current->id);
-	                        	printf("\nPressione Enter para continuar...\n");
-        						getchar();
-        						getchar();
+								
+								Matricula* currentMatricula = matriculas;
+						    	if(currentMatricula != NULL){
+						    		while (currentMatricula != NULL) {
+						    			if(currentMatricula->idAluno == idAlunoFiltro){
+						    				Vencimento* currentV = vencimentos;
+									    	while(currentV != NULL){
+								    			if(currentV->matriculaId == currentMatricula->id){
+								    				char data_str[100];
+											        struct tm* data = localtime(&currentV->data);
+											        strftime(data_str, sizeof(data_str), "%d/%m/%Y", data);
+											        printf("Matricula: %d|Vencimento ID: %d|Data: %s|Valor: %.2f|Pago: %s\n", currentMatricula->id, currentV->id, data_str, currentV->valor, currentV->pago == 0 ? "Nao" : "Sim");
+												}
+												currentV = currentV->next;
+											}
+											printf("\nPressione Enter para continuar...\n");
+				  							getchar();
+										}
+										currentMatricula = currentMatricula->next;
+									}
+								} else {
+									printf("Nenhum vencimento encontrado.\n");
+									printf("\nPressione Enter para continuar...\n");
+		  							getchar();
+								}
 	                        }
 	                        current = current->next;
 	                    }
@@ -863,22 +918,12 @@ void cadastrar_matricula(Matricula** matriculas, int idAluno, Curso* cursos, Ven
 		        novo_vencimento->data = hoje + (i * 30 * 24 * 60 * 60); // Adding i months worth of seconds
 		        novo_vencimento->valor = currentC->precoPorMes;
 		        novo_vencimento->next = *vencimentos;
-		
-		        if (i == 0) {
-		            nova_matricula->vencimentos = novo_vencimento;
-		        } else {
-		            Vencimento* ultimo = nova_matricula->vencimentos;
-		            while (ultimo->next != NULL) {
-		                ultimo = ultimo->next;
-		            }
-		            ultimo->next = novo_vencimento;
-		        }
+		        *vencimentos = novo_vencimento;
 		    }
-		
 		    nova_matricula->next = *matriculas;
 		    *matriculas = nova_matricula;
 		    salvar_matriculas(*matriculas);
-		    salvar_vencimentos(nova_matricula->vencimentos);
+		    salvar_vencimentos(*vencimentos);
 		    printf("\nMatricula cadastrada com sucesso.\n");
 		    return;
 		}
@@ -1063,7 +1108,7 @@ void excluir_matricula(Matricula** matriculas, int idMatricula) {
             }
             // Free memory associated with due dates
             liberar_vencimentos(current->vencimentos);
-            salvar_vencimentos(current->vencimentos);
+            //salvar_vencimentos(*matriculas);
             free(current);
             salvar_matriculas(*matriculas);
             printf("\nMatricula excluida com sucesso.\n");
@@ -1137,11 +1182,11 @@ Vencimento* carregar_vencimentos(){
     
     Vencimento* head = NULL;
     Vencimento* current = NULL;
-    
     char linha[MAX_LINHA];
+    
     while (fgets(linha, sizeof(linha), file)) {
         Vencimento* novo_vencimento = (Vencimento*)malloc(sizeof(Vencimento));
-        sscanf(linha, "%d,%d,%99[^,],%f,%d", &novo_vencimento->id, &novo_vencimento->matriculaId, &novo_vencimento->data, &novo_vencimento->valor, &novo_vencimento->pago);
+        sscanf(linha, "%d,%d,%ld,%f,%d", &novo_vencimento->id, &novo_vencimento->matriculaId, &novo_vencimento->data, &novo_vencimento->valor, &novo_vencimento->pago);
         novo_vencimento->next = NULL;
 
         if (!head) {
@@ -1151,6 +1196,9 @@ Vencimento* carregar_vencimentos(){
         }
         current = novo_vencimento;
     }
+    
+    fclose(file);
+    return head;
 }
 
 Vencimento* carregar_vencimentos_aluno(int idMatricula) {
@@ -1305,6 +1353,16 @@ Aluno* encontrar_aluno_por_id(int idAluno, Aluno* alunos) {
     return NULL; // Return NULL if not found
 }
 
+Matricula* encontrar_matricula_por_id(int idMatricula, Matricula* matriculas){
+	while(matriculas != NULL){
+		if(matriculas->id == idMatricula){
+			return matriculas;
+		}
+		matriculas = matriculas->next;
+	}
+	return NULL;
+}
+
 Curso* encontrar_curso_por_id(int idCurso, Curso* cursos) {
     while (cursos != NULL) {
         if (cursos->id == idCurso) {
@@ -1387,9 +1445,9 @@ int main() {
                 int id = login(alunos);
                 limpar_console();
                 if (id == -1) {
-                    menu_admin(&alunos, &cursos, &matriculas);
+                    menu_admin(&alunos, &cursos, &matriculas, &vencimentos);
                 } else if (id > 0) {
-                    menu_aluno(id, alunos, cursos, matriculas, vencimentos);
+                    menu_aluno(id, alunos, cursos, matriculas, &vencimentos);
                 } else {
                     printf("Nome de usuario ou senha invalidos. Por favor, tente novamente.\n");
                 }
