@@ -713,23 +713,25 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	                break;
 	            case 2:
 	                {
+	                	exibir_alunos(alunos);
 	                    int idAlunoFiltro;
 	                    printf("Digite o ID do Aluno: ");
 	                    scanf("%d", &idAlunoFiltro);
 	                    getchar(); // Limpa o buffer de entrada
-	                    limpar_console();
 	                    current = matriculas;
 	                    while (current != NULL) {
 	                        if (current->idAluno == idAlunoFiltro) {
 	                            Aluno* aluno = encontrar_aluno_por_id(current->idAluno, alunos);
 	                            Curso* curso = encontrar_curso_por_id(current->idCurso, cursos);
-	                            printf("ID da Matricula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
+	                            printf("\nID da Matricula: %d, Nome do Aluno: %s, Nome do Curso: %s, Meses: %d\n",
 	                                current->id, 
 	                                aluno != NULL ? aluno->nome : "Aluno nao encontrado", 
 	                                curso != NULL ? curso->nome : "Curso nao encontrado", 
 	                                current->meses
 								);
+								exibir_vencimentos(current->vencimentos, aluno->nome, current->id);
 	                        	printf("\nPressione Enter para continuar...\n");
+        						getchar();
         						getchar();
 	                        }
 	                        current = current->next;
