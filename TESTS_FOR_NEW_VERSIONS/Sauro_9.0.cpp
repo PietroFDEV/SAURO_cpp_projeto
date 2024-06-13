@@ -35,8 +35,8 @@ typedef struct Matricula {
     int id;
     int idAluno;
     int idCurso;
-    int meses; // Numero de meses que a matricula sera ativa
-    Vencimento* vencimentos; // Lista de vencimentos
+    int meses;
+    Vencimento* vencimentos;
     struct Matricula* next;
 } Matricula;
 
@@ -80,7 +80,6 @@ int custom_strptime(const char *buf, const char *format, struct tm *tm);
 
 // Funcões relacionadas aos vencimentos
 Vencimento* criar_vencimento(int id, time_t data, float valor, int pago);
-//void adicionar_vencimento(Matricula* matricula, time_t data, float valor, int pago);
 void exibir_vencimentos(Vencimento* vencimentos, Aluno* alunos, Matricula* matriculas);
 void salvar_vencimentos(Vencimento* vencimentos);
 void liberar_vencimentos(Vencimento* vencimentos);
@@ -90,7 +89,6 @@ void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos,
 void editar_vencimento_admin(Matricula* matriculas);
 void criar_vencimento_admin(Matricula* matriculas, Curso* cursos);
 void pagar_vencimento(int idAluno, Matricula* matriculas, Aluno* alunos);
-// Implementacao das funcões omitidas...
 
 void pressione_enter(){
 	printf("\nPressione Enter para continuar...\n");
@@ -100,16 +98,16 @@ void pressione_enter(){
 int custom_strptime(const char *buf, const char *format, struct tm *tm) {
     int day, month, year;
     if (sscanf(buf, "%d/%d/%d", &day, &month, &year) != 3) {
-        return 0; // Parsing failed
+        return 0;
     }
     tm->tm_mday = day;
-    tm->tm_mon = month - 1; // tm_mon is 0-based
-    tm->tm_year = year - 1900; // tm_year is years since 1900
+    tm->tm_mon = month - 1;
+    tm->tm_year = year - 1900; // ano minimo 1900
     tm->tm_hour = 0;
     tm->tm_min = 0;
     tm->tm_sec = 0;
-    tm->tm_isdst = -1; // Not set by strptime, should be set to -1
-    return 1; // Parsing successful
+    tm->tm_isdst = -1;
+    return 1;
 }
 
 Vencimento* criar_vencimento(int id, time_t data, float valor, int pago) {
@@ -121,12 +119,6 @@ Vencimento* criar_vencimento(int id, time_t data, float valor, int pago) {
     novo_vencimento->next = NULL;
     return novo_vencimento;
 }
-
-//void adicionar_vencimento(Matricula* matricula, time_t data, float valor, int pago) {
-//    Vencimento* novo_vencimento = criar_vencimento(data, valor, pago);
-//    novo_vencimento->next = matricula->vencimentos;
-//   matricula->vencimentos = novo_vencimento;
-//}
 
 void swap(Vencimento* a, Vencimento* b) {
     int tempId = a->id;
@@ -188,35 +180,25 @@ void menu_admin_vencimentos(Matricula* matriculas, Curso* cursos, Aluno* alunos,
     do {
     	limpar_console();
         printf("======= Menu Administrativo -> Gerenciamento de Vencimentos =======\n");
-        //printf("1. Criar vencimento\n");
-        //printf("2. Editar vencimento\n");
         printf("1. Exibir vencimentos\n");
         printf("2. Excluir vencimento\n");
         printf("3. Voltar\n");
         printf("\nEscolha uma opcao: ");
         scanf("%d", &opcao);
-        getchar(); // Limpa o buffer de entrada
+        getchar();
 		limpar_console();
         switch (opcao) {
-            //case 1:
-            //	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Criar =======\n");
-            //    criar_vencimento_admin(matriculas, cursos);
-            //    break;
-            //case 2:
-            //	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Editar =======\n");
-            //    editar_vencimento_admin(matriculas);
-            //    break;
-            case 2:
-            	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Excluir =======\n");
-                excluir_vencimento_admin(matriculas, vencimentos);
-                pressione_enter();
-                break;
-            case 1:{
+			case 1:{
             	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Exibir =======\n");
 			    exibir_vencimentos(vencimentos, alunos, matriculas);
 			    pressione_enter();
 			    break;
 			}
+            case 2:
+            	printf("======= Menu Administrativo -> Gerenciamento de Vencimentos -> Excluir =======\n");
+                excluir_vencimento_admin(matriculas, vencimentos);
+                pressione_enter();
+                break;
             case 3:
                 break;
             default:
@@ -235,7 +217,7 @@ void menu_relatorios(Curso* cursos, Aluno* alunos, Matricula* matriculas, Vencim
         printf("3. Voltar\n");
         printf("\nEscolha uma opcao: ");
         scanf("%d", &opcao);
-        getchar(); // Limpa o buffer de entrada
+        getchar();
 		limpar_console();
 		switch (opcao) {
 			case 1: {
@@ -358,7 +340,6 @@ void editar_vencimento_admin(Matricula* matriculas) {
                     printf("Informe o novo status de pagamento (0 para nao pago, 1 para pago): ");
                     scanf("%d", &vencimento->pago);
 
-                    //salvar_vencimentos(matriculas);
                     printf("\nVencimento editado com sucesso.\n");
                     return;
                 }
@@ -401,8 +382,6 @@ void criar_vencimento_admin(Matricula* matriculas, Curso* cursos) {
 	            printf("Informe o status de pagamento (0 para nao pago, 1 para pago): ");
 	            scanf("%d", &pago);
 	
-	            //adicionar_vencimento(matricula, data, valor, pago);
-	            //salvar_vencimentos(matriculas);
 	            printf("\nVencimento criado com sucesso.\n");
 	            return;
 	        }
@@ -420,9 +399,7 @@ void pagar_vencimento(int idAluno, Matricula* matriculas, Aluno* alunos, Vencime
     while (matricula != NULL) {
         if (matricula->idAluno == idAluno) {
         	Aluno* aluno = encontrar_aluno_por_id(matricula->idAluno, alunos);
-        	
-        	//exibir_vencimentos(matricula->vencimentos, aluno->nome, matricula->id);
-        	
+        	        	
         	int idVenc;
         	printf("\nInforme o ID do vencimento que deseja pagar: ");
 	        scanf("%d", &idVenc);
@@ -507,7 +484,7 @@ void menu_aluno(int idAluno, Aluno* alunos, Curso* cursos, Matricula* matriculas
 				    printf("6. Sair\n");
 				    printf("\nEscolha uma opcao: ");
 				    scanf("%d", & opcao);
-				    getchar(); // Limpa o buffer de entrada
+				    getchar();
 				    limpar_console();
 				
 				    switch (opcao) {
@@ -600,7 +577,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimen
         printf("6. Sair\n");
         printf("\nEscolha uma opcao: ");
         scanf("%d", &opcao_admin_menu);
-        getchar(); // Limpa o buffer de entrada
+        getchar();
         limpar_console();
         int opcao_admin;
 
@@ -615,7 +592,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimen
             printf("5. Voltar\n");
             printf("\nEscolha uma opcao: ");
             scanf("%d", &opcao_admin);
-            getchar(); // Limpa o buffer de entrada
+            getchar();
             limpar_console();
             switch (opcao_admin) {
             case 1:
@@ -652,7 +629,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimen
             printf("5. Voltar\n");
             printf("\nEscolha uma opcao: ");
             scanf("%d", &opcao_admin);
-            getchar(); // Limpa o buffer de entrada
+            getchar();
             limpar_console();
             switch (opcao_admin) {
             case 1:
@@ -688,17 +665,17 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimen
             printf("4. Voltar\n");
             printf("\nEscolha uma opcao: ");
             scanf("%d", &opcao_admin);
-            getchar(); // Limpa o buffer de entrada
+            getchar();
             limpar_console();
             switch (opcao_admin) {
             case 1:
-                exibir_matriculas(-1, *cursos, *alunos, *matriculas, *vencimentos); // Exibir todas as matriculas                
+                exibir_matriculas(-1, *cursos, *alunos, *matriculas, *vencimentos);
                 break;
             case 2:
                 printf("Digite o ID da matricula para remover: ");
                 int id;
                 scanf("%d", &id);
-                getchar(); // Limpa o buffer de entrada
+                getchar();
                 excluir_matricula(matriculas, id);
                 pressione_enter();
                 break;
@@ -706,7 +683,7 @@ void menu_admin(Aluno** alunos, Curso** cursos, Matricula** matriculas, Vencimen
                 printf("Digite o ID da matricula para editar: ");
                 int idMatricula;
                 scanf("%d", &idMatricula);
-                getchar(); // Limpa o buffer de entrada
+                getchar();
                 editar_matricula(*matriculas, *cursos, *alunos, idMatricula);
                 pressione_enter();
                 break;
@@ -798,7 +775,7 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	
 	        
 	        scanf("%d", &opcao);
-	        getchar(); // Limpa o buffer de entrada
+	        getchar();
 	        limpar_console();
 			
 	        Matricula* current;
@@ -828,7 +805,7 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	                    int idAlunoFiltro;
 	                    printf("Digite o ID do Aluno: ");
 	                    scanf("%d", &idAlunoFiltro);
-	                    getchar(); // Limpa o buffer de entrada
+	                    getchar();
 	                    limpar_console();
 	                    current = matriculas;
 	                    while (current != NULL) {
@@ -873,7 +850,7 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	                    int idCursoFiltro;
 	                    printf("Digite o ID do Curso: ");
 	                    scanf("%d", &idCursoFiltro);
-	                    getchar(); // Limpa o buffer de entrada
+	                    getchar();
 	                    limpar_console();
 	                    current = matriculas;
 	                    while (current != NULL) {
@@ -897,7 +874,7 @@ void exibir_matriculas(int idAluno, Curso* cursos, Aluno* alunos, Matricula* mat
 	                    int mesesFiltro;
 	                    printf("Digite o numero de meses: ");
 	                    scanf("%d", &mesesFiltro);
-	                    getchar(); // Limpa o buffer de entrada
+	                    getchar();
 	                    limpar_console();
 	                    current = matriculas;
 	                    while (current != NULL) {
@@ -951,7 +928,7 @@ void cadastrar_curso(Curso** cursos) {
   scanf("%f", &novo_curso->precoPorMes);
   printf("Digite o numero de parcelas do curso: ");
   scanf("%d", &novo_curso->numParcelas);
-  getchar(); // Limpa o buffer de entrada
+  getchar();
   novo_curso->next = *cursos;
   *cursos = novo_curso;
   salvar_cursos(*cursos);
@@ -965,27 +942,24 @@ void cadastrar_matricula(Matricula** matriculas, int idAluno, Curso* cursos, Ven
     exibir_cursos(cursos);
     printf("Digite o ID do curso: ");
     int idCurso;
-    //scanf("%d", &nova_matricula->idCurso);
     scanf("%d", &idCurso);
-    getchar(); // Limpa o buffer de entrada
+    getchar();
 
 	Curso* currentC = cursos;
 	while(currentC != NULL){
 		if(currentC->id == idCurso){
 			nova_matricula->idCurso = idCurso;
-			// Ask for number of months for the subscription
 		    int numMeses = currentC->numParcelas;
 		    
 		    nova_matricula->meses = numMeses;
 		
-		    // Calculate due dates for the subscription
 		    time_t hoje = time(NULL);
 		    for (int i = 0; i < numMeses; i++) {
 		        Vencimento* novo_vencimento = (Vencimento*)malloc(sizeof(Vencimento));
 		        novo_vencimento->id = i + 1;
 		        novo_vencimento->matriculaId = nova_matricula->id;
 		        novo_vencimento->pago = 0;
-		        novo_vencimento->data = hoje + (i * 30 * 24 * 60 * 60); // Adding i months worth of seconds
+		        novo_vencimento->data = hoje + (i * 30 * 24 * 60 * 60);
 		        novo_vencimento->valor = currentC->precoPorMes;
 		        novo_vencimento->next = *vencimentos;
 		        *vencimentos = novo_vencimento;
@@ -1008,7 +982,7 @@ void editar_aluno(Aluno* alunos) {
   int id;
   printf("\nDigite o ID do aluno a ser editado: ");
   scanf("%d", &id);
-  getchar(); // Limpa o buffer de entrada
+  getchar();
   Aluno* current = alunos;
   while (current != NULL) {
     if (current->id == id) {
@@ -1032,7 +1006,7 @@ void editar_curso(Curso* cursos) {
   int id;
   printf("\nDigite o ID do curso a ser editado: ");
   scanf("%d", &id);
-  getchar(); // Limpa o buffer de entrada
+  getchar();
   Curso* current = cursos;
   while (current != NULL) {
     if (current->id == id) {
@@ -1043,7 +1017,7 @@ void editar_curso(Curso* cursos) {
       scanf("%f", &current->precoPorMes);
       printf("Digite o novo numero de parcelas do curso: ");
       scanf("%d", &current->numParcelas);
-      getchar(); // Limpa o buffer de entrada
+      getchar();
       salvar_cursos(cursos);
       printf("\nCurso editado com sucesso.\n");
       return;
@@ -1058,10 +1032,9 @@ void editar_matricula(Matricula* matricula, Curso* cursos, Aluno* alunos, int id
 	while(currentM != NULL){
 		if(currentM->id == idMatricula){
 			int cursoId;
-			// Prompt user for new course ID and subscription months
 		    printf("\nDigite o novo ID do curso: ");
 		    scanf("%d", &cursoId);
-		    getchar(); // Limpa o buffer de entrada
+		    getchar();
 		    Curso* currentC = cursos;
 		    while(currentC != NULL){
 		    	if(currentC->id == cursoId){
@@ -1069,17 +1042,15 @@ void editar_matricula(Matricula* matricula, Curso* cursos, Aluno* alunos, int id
 		    		printf("Digite a nova quantidade de meses para a matricula: ");
 				    int numMeses;
 				    scanf("%d", &numMeses);
-				    getchar(); // Clear input buffer
+				    getchar();
 				
-				    // Free existing due dates
 				    liberar_vencimentos(currentM->vencimentos);
 				    currentM->vencimentos = NULL;
 				
-				    // Recalculate and add new due dates
 				    time_t hoje = time(NULL);
 				    for (int i = 0; i < numMeses; i++) {
 				        Vencimento* novo_vencimento = (Vencimento*)malloc(sizeof(Vencimento));
-				        novo_vencimento->data = hoje + (i * 30 * 24 * 60 * 60); // Adding i months worth of seconds
+				        novo_vencimento->data = hoje + (i * 30 * 24 * 60 * 60);
 				        novo_vencimento->valor = currentC->precoPorMes;
 				        novo_vencimento->next = NULL;
 				
@@ -1111,7 +1082,7 @@ void excluir_aluno(Aluno** alunos, Matricula** matriculas) {
   int id;
   printf("\nDigite o ID do aluno a ser excluido: ");
   scanf("%d", &id);
-  getchar(); // Limpa o buffer de entrada
+  getchar();
   Aluno* current = *alunos;
   Aluno* previous = NULL;
   while (current != NULL) {
@@ -1123,7 +1094,7 @@ void excluir_aluno(Aluno** alunos, Matricula** matriculas) {
       }
       free(current);
       salvar_alunos(*alunos);
-      excluir_matricula(matriculas, id); // Excluir matriculas do aluno
+      excluir_matricula(matriculas, id);
       printf("\nAluno excluido com sucesso.\n");
       return;
     }
@@ -1137,7 +1108,7 @@ void excluir_curso(Curso** cursos, Matricula** matriculas) {
   int id;
   printf("Digite o ID do curso a ser excluido: ");
   scanf("%d", &id);
-  getchar(); // Limpa o buffer de entrada
+  getchar();
   Curso* current = *cursos;
   Curso* previous = NULL;
   while (current != NULL) {
@@ -1168,9 +1139,7 @@ void excluir_matricula(Matricula** matriculas, int idMatricula) {
             } else {
                 previous->next = current->next;
             }
-            // Free memory associated with due dates
             liberar_vencimentos(current->vencimentos);
-            //salvar_vencimentos(*matriculas);
             free(current);
             salvar_matriculas(*matriculas);
             printf("\nMatricula excluida com sucesso.\n");
@@ -1383,8 +1352,7 @@ Matricula* carregar_matriculas(Curso* cursos) {
             if (curso) {
                 time_t now = time(NULL);
                 for (int i = 0; i < nova_matricula->meses; ++i) {
-                    time_t vencimento_data = now + (i * 30 * 24 * 3600); // Assuming 30 days per month
-                    //adicionar_vencimento(nova_matricula, vencimento_data, curso->precoPorMes, 0);
+                    time_t vencimento_data = now + (i * 30 * 24 * 3600);
                 }
             }
         }
@@ -1408,7 +1376,7 @@ Aluno* encontrar_aluno_por_id(int idAluno, Aluno* alunos) {
         }
         alunos = alunos->next;
     }
-    return NULL; // Return NULL if not found
+    return NULL;
 }
 
 Matricula* encontrar_matricula_por_id(int idMatricula, Matricula* matriculas){
@@ -1428,7 +1396,7 @@ Curso* encontrar_curso_por_id(int idCurso, Curso* cursos) {
         }
         cursos = cursos->next;
     }
-    return NULL; // Return NULL if not found
+    return NULL;
 }
 
 void salvar_alunos(Aluno* alunos) {
@@ -1473,9 +1441,9 @@ void salvar_matriculas(Matricula* matriculas) {
 time_t calcular_data_expiracao() {
   time_t agora = time(NULL);
   struct tm * tempo_atual = localtime( & agora);
-  tempo_atual -> tm_mon++; // Incrementa o mes ja que janeiro é representado por 0
-  tempo_atual -> tm_year += tempo_atual -> tm_mon / 12; // Ajusta o ano se o mes exceder 12
-  tempo_atual -> tm_mon %= 12; // Garante que o mes esteja entre 0 e 11
+  tempo_atual -> tm_mon++;
+  tempo_atual -> tm_year += tempo_atual -> tm_mon / 12;
+  tempo_atual -> tm_mon %= 12;
   return mktime(tempo_atual);
 }
 
@@ -1495,7 +1463,7 @@ int main() {
     	
         menu_login();
         scanf("%d", &opcao);
-        getchar(); // Limpa o buffer de entrada
+        getchar();
         limpar_console();
 
         switch (opcao) {
